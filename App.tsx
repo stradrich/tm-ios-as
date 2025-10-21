@@ -5,6 +5,7 @@
  * @format
  */
 
+import React, { useState } from 'react';
 import { NewAppScreen } from '@react-native/new-app-screen';
 import { StatusBar, StyleSheet, useColorScheme, View, Text } from 'react-native';
 import {
@@ -12,42 +13,72 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import SplashScreen from './src/screens/SplashScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
+import MainScreen from './src/screens/MainScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
+enableScreens();
+
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
+  // Splash/Onboarding state
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+     <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <NavigationContainer>
+          <Stack.Navigator>
+              {!hasLoaded ? (
+              <Stack.Screen name="Splash">
+                {(props) => (
+                  <SplashScreen
+                    {...props}
+                    onComplete={() => setHasLoaded(true)}
+                  />
+                )}
+              </Stack.Screen>
+            ) : !hasSeenOnboarding ? (
+              <Stack.Screen name="Onboarding">
+                {(props) => (
+                  <OnboardingScreen
+                    {...props}
+                    onComplete={() => setHasSeenOnboarding(true)}
+                  />
+                )}
+              </Stack.Screen>
+            ) : (
+              <Stack.Screen name="Main" component={MainScreenTabNavigator} />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+     </GestureHandlerRootView>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
+// Bottom Tabs for Tasks (CRUD) + Settings (dark/light mode, reset)
+function MainScreenTabNavigator() {
   return (
-    <View style={styles.container}>
-      {/* <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      /> */}
-
-      <Text style={styles.text}>Task Manager</Text>
-    </View>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Screen name="Tasks" component={MainScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center', 
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold'
-  }
-});
 
 export default App;

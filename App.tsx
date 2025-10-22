@@ -37,6 +37,12 @@ function App() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
+  // Settings
+  const resetApp = () => {
+    setHasLoaded(false);
+    setHasSeenOnboarding(false);
+  };
+
   return (
      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -62,7 +68,9 @@ function App() {
                 )}
               </Stack.Screen>
             ) : (
-              <Stack.Screen name="Main" component={MainScreenTabNavigator} />
+              <Stack.Screen name="Main">
+                {(props) => <MainScreenTabNavigator {...props} onReset={resetApp} />}
+              </Stack.Screen>
             )}
           </Stack.Navigator>
         </NavigationContainer>
@@ -72,11 +80,13 @@ function App() {
 }
 
 // Bottom Tabs for Tasks (CRUD) + Settings (dark/light mode, reset)
-function MainScreenTabNavigator() {
+function MainScreenTabNavigator({ onReset }: { onReset: () => void }) {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Tasks" component={MainScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Settings">
+        {(props) => <SettingsScreen {...props} onReset={onReset} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

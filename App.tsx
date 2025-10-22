@@ -15,6 +15,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 enableScreens();
 
+import Icon from 'react-native-vector-icons/Ionicons';
+
 // define type for task
 interface Task {
   id: string;
@@ -80,8 +82,34 @@ function App() {
 
 
   // ✅ Move MainScreenTabNavigator inside App, so it can access tasks & setTasks
+  // const MainScreenTabNavigator = () => (
+  //   <Tab.Navigator screenOptions={{ headerShown: false }}>
+  //     <Tab.Screen name="Tasks">
+  //       {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} />}
+  //     </Tab.Screen>
+  //     <Tab.Screen name="Settings">
+  //       {(props) => <SettingsScreen {...props} onReset={resetApp} />}
+  //     </Tab.Screen>
+  //   </Tab.Navigator>
+  // );
   const MainScreenTabNavigator = () => (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarActiveTintColor: '#007AFF', // iOS blue
+          tabBarInactiveTintColor: 'gray',
+          tabBarStyle: { backgroundColor: isDarkMode ? '#000' : '#fff' },
+          tabBarIcon: ({ color, size, focused }) => {
+            let iconName;
+            if (route.name === 'Tasks') {
+              iconName = focused ? 'checkmark-circle' : 'checkmark-circle-outline';
+            } else if (route.name === 'Settings') {
+              iconName = focused ? 'settings' : 'settings-outline';
+            }
+            return <Icon name={iconName} size={size} color={color} />;
+          },
+        })}
+      >
       <Tab.Screen name="Tasks">
         {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} />}
       </Tab.Screen>
@@ -96,7 +124,16 @@ function App() {
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <NavigationContainer>
-          <Stack.Navigator>
+          <Stack.Navigator
+             screenOptions={{
+              headerTitle: '',
+               headerShown: false,
+              headerStyle: {
+                backgroundColor: '#f2f2f2', // match content background
+              },
+               headerShadowVisible: false,  // remove bottom shadow line 
+            }}
+          >
             {!hasLoaded ? (
               <Stack.Screen name="Splash">
                 {(props) => (

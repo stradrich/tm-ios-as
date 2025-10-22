@@ -34,6 +34,8 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const pendingCount = tasks.filter(task => !task.completed).length;
+
 
   // Open modal for creating or editing
   const openModalForTask = (task?: Task) => {
@@ -95,6 +97,9 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My Tasks</Text>
+      <Text style={styles.pending}>
+        {pendingCount} pending {pendingCount === 1 ? "task" : "tasks"}
+      </Text>
 
       <FlatList
         data={tasks}
@@ -255,11 +260,24 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
-  taskCard: { backgroundColor: "#f2f2f2", padding: 12, borderRadius: 10, marginBottom: 10 },
+  container: { flex: 1, padding: 16},
+  title: { fontSize: 24, fontWeight: "bold", top: 50, left: 5, marginBottom: 60 },
+  pending:  { fontSize: 15, fontWeight: "thin", left: 5, marginBottom: 30 },
+  taskCard: {
+    backgroundColor: "#f2f2f2",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    // Shadow for iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    // Shadow for Android
+    elevation: 4,
+  },
   taskTitle: { fontSize: 18, fontWeight: "600" },
-  completed: { textDecorationLine: "line-through", opacity: 0.6 },
+  completed: { textDecorationLine: "line-through", opacity: 0.3 },
   description: { fontSize: 14, color: "#555", marginTop: 4 },
   due: { fontSize: 12, color: "#888", marginTop: 6 },
   deleteButton: {
@@ -302,8 +320,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#007AFF",
+    borderWidth: 1,
+    borderColor: "#888", // grey border
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,

@@ -1,17 +1,6 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React, { useState } from 'react';
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View, Text } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { StatusBar, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -26,6 +15,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 enableScreens();
 
+// define type for task
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate: string;
+  completed: boolean;
+  createdAt: string;
+}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,13 +41,63 @@ function App() {
     setHasSeenOnboarding(false);
   };
 
+  // Mockdata for MainScreen tasks
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: "1",
+      title: "Complete React Native assignment",
+      description: "Build a task manager app with offline support",
+      dueDate: new Date(Date.now() + 86400000).toISOString(), // shows date
+      completed: false,
+      createdAt: ''
+    },
+    {
+      id: "2",
+      title: "Review pull requests",
+      description: "Check and approve pending PRs",
+      dueDate: undefined, // will show 'Not set'
+      completed: false,
+      createdAt: ''
+    },
+    {
+      id: "3",
+      title: "Team standup meeting",
+      description: "Daily sync with the team",
+      dueDate: new Date(Date.now() + 3600000).toISOString(), // shows date
+      completed: true,
+      createdAt: ''
+    },
+    {
+      id: "4",
+      title: "Buy groceries",
+      description: "Milk, eggs, bread",
+      dueDate: undefined, // will show 'Not set'
+      completed: false,
+      createdAt: ''
+    },
+  ]);
+
+
+
+  // ✅ Move MainScreenTabNavigator inside App, so it can access tasks & setTasks
+  const MainScreenTabNavigator = () => (
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Screen name="Tasks">
+        {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} />}
+      </Tab.Screen>
+      <Tab.Screen name="Settings">
+        {(props) => <SettingsScreen {...props} onReset={resetApp} />}
+      </Tab.Screen>
+    </Tab.Navigator>
+  );
+
   return (
-     <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <NavigationContainer>
           <Stack.Navigator>
-              {!hasLoaded ? (
+            {!hasLoaded ? (
               <Stack.Screen name="Splash">
                 {(props) => (
                   <SplashScreen
@@ -68,26 +116,12 @@ function App() {
                 )}
               </Stack.Screen>
             ) : (
-              <Stack.Screen name="Main">
-                {(props) => <MainScreenTabNavigator {...props} onReset={resetApp} />}
-              </Stack.Screen>
+              <Stack.Screen name="Main" component={MainScreenTabNavigator} />
             )}
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>
-     </GestureHandlerRootView>
-  );
-}
-
-// Bottom Tabs for Tasks (CRUD) + Settings (dark/light mode, reset)
-function MainScreenTabNavigator({ onReset }: { onReset: () => void }) {
-  return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Tasks" component={MainScreen} />
-      <Tab.Screen name="Settings">
-        {(props) => <SettingsScreen {...props} onReset={onReset} />}
-      </Tab.Screen>
-    </Tab.Navigator>
+    </GestureHandlerRootView>
   );
 }
 

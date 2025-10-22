@@ -9,7 +9,7 @@ export default function SettingsScreen({ onReset }: SettingsScreenProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Settings Screen</Text>
-      <Button title="Reset App" onPress={onReset || (() => {})} />
+      <Button title="Reset App" onPress={onReset!}/>
     </View>
   );
 }

@@ -40,7 +40,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
   return (
     <LinearGradient
-      colors={isDarkMode ? ["#0f0f0f", "#1c1c1e"] : ["#2563eb", "#ae0505ff"]}
+      colors={isDarkMode ? ["#0f0f0f", "#1c1c1e"] : ["#22aeffff", "#ff04046e"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}

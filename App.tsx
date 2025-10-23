@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import { StatusBar, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { NavigationContainer } from '@react-navigation/native';
@@ -31,13 +31,15 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  // const isDarkMode = useColorScheme() === 'dark';
 
   // Splash/Onboarding state
   const [hasLoaded, setHasLoaded] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
   // Settings
+  const [isOffline, setIsOffline] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const resetApp = () => {
     setHasLoaded(false);
     setHasSeenOnboarding(false);
@@ -79,19 +81,6 @@ function App() {
     },
   ]);
 
-
-
-  // ✅ Move MainScreenTabNavigator inside App, so it can access tasks & setTasks
-  // const MainScreenTabNavigator = () => (
-  //   <Tab.Navigator screenOptions={{ headerShown: false }}>
-  //     <Tab.Screen name="Tasks">
-  //       {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} />}
-  //     </Tab.Screen>
-  //     <Tab.Screen name="Settings">
-  //       {(props) => <SettingsScreen {...props} onReset={resetApp} />}
-  //     </Tab.Screen>
-  //   </Tab.Navigator>
-  // );
   const MainScreenTabNavigator = () => (
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -111,10 +100,16 @@ function App() {
         })}
       >
       <Tab.Screen name="Tasks">
-        {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} />}
+        {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} isDarkMode={isDarkMode}/>}
       </Tab.Screen>
       <Tab.Screen name="Settings">
-        {(props) => <SettingsScreen {...props} onReset={resetApp} />}
+        {(props) => <SettingsScreen {...props} 
+                      onReset={resetApp} 
+                      isOffline={isOffline} 
+                      setIsOffline={setIsOffline}
+                      isDarkMode={isDarkMode}
+                      setIsDarkMode={setIsDarkMode}
+                      />}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -123,13 +118,31 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        {isOffline && (
+          <View
+            style={{
+              position: 'absolute',     
+              top: 0,                  
+              left: 0,
+              right: 0,
+              zIndex: 100,              
+              backgroundColor: '#f8a50c',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 35,
+              paddingTop: 50,      
+              }}
+            >
+            <Text style={{ color: '#fff', fontWeight: '600' }}>You’re offline</Text>
+          </View>
+        )}
         <NavigationContainer>
           <Stack.Navigator
              screenOptions={{
               headerTitle: '',
-               headerShown: false,
+              //  headerShown: false,
               headerStyle: {
-                backgroundColor: '#f2f2f2', // match content background
+                backgroundColor: isDarkMode ? '#000' : '#f2f2f2',  // match content background
               },
                headerShadowVisible: false,  // remove bottom shadow line 
             }}

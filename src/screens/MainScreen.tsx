@@ -25,9 +25,10 @@ interface Task {
 interface MainScreenProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  isDarkMode: boolean;
 }
 
-export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
+export default function MainScreen({ tasks, setTasks, isDarkMode }: MainScreenProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -95,10 +96,17 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>My Tasks</Text>
-      <Text style={styles.pending}>
-        {pendingCount} pending {pendingCount === 1 ? "task" : "tasks"}
+    <View 
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? "#000" : "#f5f5f5" },
+      ]}
+    >
+      <Text  style={[styles.title, { color: isDarkMode ? "#fff" : "#000" }]}>My Tasks</Text>
+      <Text style={[styles.pending, { color: isDarkMode ? "#bbb" : "#333" }]}>
+        {pendingCount === 0
+          ? "You're task free!"
+          : `${pendingCount} pending ${pendingCount === 1 ? "task" : "tasks"}`}
       </Text>
 
       <FlatList
@@ -114,9 +122,10 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
               {/* Rounded Checkbox */}
               <Pressable
                 style={[
-                  styles.checkbox,
-                  item.completed && styles.checkboxChecked,
-                ]}
+                    styles.checkbox,
+                    item.completed && styles.checkboxChecked,
+                    { borderColor: isDarkMode ? "#aaa" : "#888" },
+                  ]}
                 onPress={() =>
                   setTasks((prev) =>
                     prev.map((t) =>
@@ -130,12 +139,30 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
 
               {/* Task Info */}
               <Pressable style={styles.taskCardPressable} onPress={() => openModalForTask(item)}>
-                <View style={styles.taskCard}>
-                  <Text style={[styles.taskTitle, item.completed && styles.completed]}>
+                <View 
+                   style={[
+                    styles.taskCard,
+                    {
+                      backgroundColor: isDarkMode ? "#1c1c1e" : "#ffffffff",
+                      shadowColor: isDarkMode ? "#000" : "#888",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.taskTitle,
+                      { color: isDarkMode ? "#fff" : "#000" },
+                      item.completed && styles.completed,
+                    ]}
+                  >
                     {item.title}
                   </Text>
-                  {item.description && <Text style={styles.description}>{item.description}</Text>}
-                  <Text style={styles.due}>
+                  {item.description && 
+                    <Text style={[styles.description, { color: isDarkMode ? "#aaa" : "#555" }]}>
+                      {item.description}
+                    </Text>
+                  }
+                  <Text style={[styles.due, { color: isDarkMode ? "#888" : "#888" }]}>
                     Due: {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : "Not set"}
                   </Text>
                 </View>
@@ -160,20 +187,45 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
         onRequestClose={() => setModalVisible(false)}
         transparent={false}
       >
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>
+        <View 
+           style={[
+            styles.modalContainer,
+            { backgroundColor: isDarkMode ? "#000" : "#fff" },
+          ]}
+        >
+          <Text
+            style={[
+              styles.modalTitle,
+              { color: isDarkMode ? "#fff" : "#000" },
+            ]}
+          >
             {editingTaskId ? "Edit Task" : "Create Task"}
           </Text>
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: isDarkMode ? "#1c1c1e" : "#fff",
+                color: isDarkMode ? "#fff" : "#000",
+                borderColor: isDarkMode ? "#333" : "#ccc",
+              },
+            ]}
             placeholder="Task title *"
             value={title}
             onChangeText={setTitle}
           />
 
           <TextInput
-            style={[styles.input, { height: 100 }]}
+            style={[
+              styles.input,
+              {
+                height: 100,
+                backgroundColor: isDarkMode ? "#1c1c1e" : "#fff",
+                color: isDarkMode ? "#fff" : "#000",
+                borderColor: isDarkMode ? "#333" : "#ccc",
+              },
+            ]}
             placeholder="Description (optional)"
             value={description}
             onChangeText={setDescription}
@@ -182,12 +234,19 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
 
           {/* Due Date */}
           <View style={{ marginBottom: 15 }}>
-            <Text style={{ marginBottom: 6 }}>Due Date</Text>
+            <Text style={{ marginBottom: 6, color: isDarkMode ? "#ccc" : "#000" }}>Due Date</Text>
             <Pressable
-              style={[styles.input, { justifyContent: "center" }]}
+              style={[
+                styles.input,
+                {
+                  justifyContent: "center",
+                  backgroundColor: isDarkMode ? "#1c1c1e" : "#fff",
+                  borderColor: isDarkMode ? "#333" : "#ccc",
+                },
+              ]}
               onPress={() => setDatePickerVisible(true)}
             >
-              <Text style={{ color: dueDate ? "#000" : "#888" }}>
+              <Text style={{ color: dueDate ? (isDarkMode ? "#fff" : "#000") : "#888" }}>
                 {dueDate ? dueDate.toLocaleDateString() : "Not set"}
               </Text>
             </Pressable>
@@ -195,15 +254,14 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
             {/* iOS Spinner */}
             {Platform.OS === "ios" && isDatePickerVisible && (
               <View
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    backgroundColor: "white",
-                    // borderTopWidth: 1,
-                    borderColor: "#ccc",
-                    justifyContent: "center",
-                  }}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  backgroundColor: isDarkMode ? "#1c1c1e" : "#fff",
+                  borderColor: isDarkMode ? "#333" : "#ccc",
+                  justifyContent: "center",
+                }}
               >
                 <DateTimePicker
                   value={dueDate ?? new Date()}
@@ -213,6 +271,7 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
                     if (selectedDate) setDueDate(selectedDate);
                   }}
                   style={{ width: "100%", height: "100%" }}
+                  themeVariant={isDarkMode ? "dark" : "light"}
                 />
                 <Pressable
                   style={{ alignSelf: "flex-end", padding: 10 }}
@@ -240,7 +299,11 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
 
           {/* Save & Cancel */}
           <Pressable
-            style={[styles.saveButton, !title.trim() && styles.disabledButton]}
+            style={[
+              styles.saveButton,
+              !title.trim() && styles.disabledButton,
+              { backgroundColor: isDarkMode ? "#0A84FF" : "#007AFF" },
+            ]}
             onPress={handleSave}
             disabled={!title.trim()}
           >
@@ -251,7 +314,13 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
             style={styles.cancelButton}
             onPress={() => setModalVisible(false)}
           >
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text      
+              style={[
+                styles.cancelText,
+                { color: isDarkMode ? "#0A84FF" : "#007AFF" },
+              ]}>
+            Cancel
+          </Text>
           </Pressable>
         </View>
       </Modal>
@@ -261,10 +330,10 @@ export default function MainScreen({ tasks, setTasks }: MainScreenProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16},
-  title: { fontSize: 24, fontWeight: "bold", top: 50, left: 5, marginBottom: 60 },
-  pending:  { fontSize: 15, fontWeight: "thin", left: 5, marginBottom: 30 },
+  title: { fontSize: 24, fontWeight: "bold", top: 20, left: 5, marginBottom: 25 },
+  pending:  { fontSize: 15, fontWeight: "thin", left: 5, marginBottom: 25 },
   taskCard: {
-    backgroundColor: "#f2f2f2",
+    // backgroundColor: "#f2f2f2",
     padding: 12,
     borderRadius: 10,
     marginBottom: 10,
@@ -278,8 +347,8 @@ const styles = StyleSheet.create({
   },
   taskTitle: { fontSize: 18, fontWeight: "600" },
   completed: { textDecorationLine: "line-through", opacity: 0.3 },
-  description: { fontSize: 14, color: "#555", marginTop: 4 },
-  due: { fontSize: 12, color: "#888", marginTop: 6 },
+  description: { fontSize: 14, marginTop: 4 },
+  due: { fontSize: 12, marginTop: 6 },
   deleteButton: {
     backgroundColor: "#FF3B30",
     justifyContent: "center",

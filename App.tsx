@@ -102,7 +102,7 @@ function App() {
       <Tab.Screen name="Tasks">
         {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} isDarkMode={isDarkMode}/>}
       </Tab.Screen>
-      <Tab.Screen name="Settings">
+      <Tab.Screen name="Settings"  options={{ headerShown: false }}>
         {(props) => <SettingsScreen {...props} 
                       onReset={resetApp} 
                       isOffline={isOffline} 
@@ -142,13 +142,13 @@ function App() {
               headerTitle: '',
               //  headerShown: false,
               headerStyle: {
-                backgroundColor: isDarkMode ? '#000' : '#f2f2f2',  // match content background
+                backgroundColor: isDarkMode ? '#000' : 'f2f2f2',  // match content background
               },
                headerShadowVisible: false,  // remove bottom shadow line 
             }}
           >
             {!hasLoaded ? (
-              <Stack.Screen name="Splash">
+              <Stack.Screen name="Splash" options={{ headerShown: false }}>
                 {(props) => (
                   <SplashScreen
                     {...props}
@@ -157,7 +157,7 @@ function App() {
                 )}
               </Stack.Screen>
             ) : !hasSeenOnboarding ? (
-              <Stack.Screen name="Onboarding">
+              <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
                 {(props) => (
                   <OnboardingScreen
                     {...props}

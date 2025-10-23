@@ -212,6 +212,7 @@ export default function MainScreen({ tasks, setTasks, isDarkMode }: MainScreenPr
               },
             ]}
             placeholder="Task title *"
+            placeholderTextColor={isDarkMode ? "#999" : "#888"}
             value={title}
             onChangeText={setTitle}
           />
@@ -227,6 +228,7 @@ export default function MainScreen({ tasks, setTasks, isDarkMode }: MainScreenPr
               },
             ]}
             placeholder="Description (optional)"
+             placeholderTextColor={isDarkMode ? "#999" : "#888"}
             value={description}
             onChangeText={setDescription}
             multiline

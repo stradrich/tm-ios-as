@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -16,6 +16,7 @@ import { enableScreens } from 'react-native-screens';
 enableScreens();
 
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // define type for task
 interface Task {
@@ -40,46 +41,98 @@ function App() {
   // Settings
   const [isOffline, setIsOffline] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const resetApp = () => {
+  const resetApp = async () => {
     setHasLoaded(false);
     setHasSeenOnboarding(false);
+    setTasks([]); 
+    await AsyncStorage.removeItem('TASKS');
   };
 
   // Mockdata for MainScreen tasks
   const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Complete React Native assignment",
-      description: "Build a task manager app with offline support",
-      dueDate: new Date(Date.now() + 86400000).toISOString(), // shows date
-      completed: false,
-      createdAt: ''
-    },
-    {
-      id: "2",
-      title: "Review pull requests",
-      description: "Check and approve pending PRs",
-      dueDate: undefined, // will show 'Not set'
-      completed: false,
-      createdAt: ''
-    },
-    {
-      id: "3",
-      title: "Team standup meeting",
-      description: "Daily sync with the team",
-      dueDate: new Date(Date.now() + 3600000).toISOString(), // shows date
-      completed: true,
-      createdAt: ''
-    },
-    {
-      id: "4",
-      title: "Buy groceries",
-      description: "Milk, eggs, bread",
-      dueDate: undefined, // will show 'Not set'
-      completed: false,
-      createdAt: ''
-    },
+    // {
+    //   id: "1",
+    //   title: "Complete React Native assignment",
+    //   description: "Build a task manager app with offline support",
+    //   dueDate: new Date(Date.now() + 86400000).toISOString(), // shows date
+    //   completed: false,
+    //   createdAt: ''
+    // },
+    // {
+    //   id: "2",
+    //   title: "Review pull requests",
+    //   description: "Check and approve pending PRs",
+    //   dueDate: undefined, // will show 'Not set'
+    //   completed: false,
+    //   createdAt: ''
+    // },
+    // {
+    //   id: "3",
+    //   title: "Team standup meeting",
+    //   description: "Daily sync with the team",
+    //   dueDate: new Date(Date.now() + 3600000).toISOString(),
+    //   completed: true,
+    //   createdAt: ''
+    // },
+    // {
+    //   id: "4",
+    //   title: "Buy groceries",
+    //   description: "Milk, eggs, bread",
+    //   dueDate: undefined,
+    //   completed: false,
+    //   createdAt: ''
+    // },
   ]);
+
+  // storage
+  // Load tasks from AsyncStorage
+  const loadTasksFromStorage = async () => {
+    try {
+      const saved = await AsyncStorage.getItem('TASKS');
+      if (saved) {
+        setTasks(JSON.parse(saved));
+        console.log('🧠 Loaded tasks from storage');
+      } else {
+        console.log('✨ No stored tasks found, using mock data');
+      }
+    } catch (error) {
+      console.log('Failed to load tasks:', error);
+    }
+  };
+
+  // Save tasks to AsyncStorage
+  const saveTasksToStorage = async (tasks: Task[]) => {
+    try {
+      await AsyncStorage.setItem('TASKS', JSON.stringify(tasks));
+      console.log('💾 Tasks saved to AsyncStorage');
+    } catch (error) {
+      console.log('Failed to save tasks:', error);
+    }
+  };
+
+  // Optional: dump storage for debugging
+  const dumpStorage = async () => {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      // console.log('All keys in storage:', keys);
+
+      const tasks = await AsyncStorage.getItem('TASKS');
+      console.log('Stored TASKS:', tasks);
+    } catch (error) {
+      console.log('Failed to read storage:', error);
+    }
+  };
+
+  // Load tasks once on mount
+  useEffect(() => {
+    loadTasksFromStorage();
+  }, []);
+
+  // Save tasks whenever they change
+  useEffect(() => {
+    saveTasksToStorage(tasks);
+    dumpStorage();
+  }, [tasks]);
 
   const MainScreenTabNavigator = () => (
       <Tab.Navigator

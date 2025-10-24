@@ -13,7 +13,6 @@ import {
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
 interface Task {
   id: string;
   title: string;

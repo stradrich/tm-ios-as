@@ -17,6 +17,7 @@ enableScreens();
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
 
 // define type for task
 interface Task {
@@ -134,6 +135,32 @@ function App() {
     dumpStorage();
   }, [tasks]);
 
+  // Connection
+  // real network state
+  useEffect(() => {
+    console.log("Simulated offline is now:", isOffline);
+  }, [isOffline]);
+
+  const [networkIsConnected, setNetworkIsConnected] = useState(true); 
+  useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener(state => {
+          console.log("Connection type:", state.type);
+          console.log("Is connected?", state.isConnected);
+          // setIsOffline(!state.isConnected);
+          setNetworkIsConnected(state.isConnected ?? true);
+        });
+    
+        return () => unsubscribe(); // cleanup on unmount
+      }, []);
+  
+  // effective offline: either simulated or real offline
+  const effectiveOffline = !networkIsConnected || isOffline;
+
+  useEffect(() => {
+    console.log("Effective offline:", effectiveOffline);
+  }, [effectiveOffline]);
+
+
   const MainScreenTabNavigator = () => (
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -171,7 +198,8 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        {isOffline && (
+        {/* {isOffline && ( */}
+        {effectiveOffline && (
           <View
             style={{
               position: 'absolute',     
@@ -189,6 +217,7 @@ function App() {
             <Text style={{ color: '#fff', fontWeight: '600' }}>You’re offline</Text>
           </View>
         )}
+        {/* )} */}
         <NavigationContainer>
           <Stack.Navigator
              screenOptions={{

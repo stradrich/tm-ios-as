@@ -1,3 +1,4 @@
+# GENERAL APP FLOW (ANDROID & IOS)
 [![Watch the video](https://img.youtube.com/vi/r5N7Nv2SkNA/0.jpg)](https://youtu.be/r5N7Nv2SkNA)
 
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).

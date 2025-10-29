@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar, Text, useColorScheme, View } from 'react-native';
+import { StatusBar, Text, useColorScheme, View, RefreshControl} from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { NavigationContainer } from '@react-navigation/native';
@@ -48,6 +48,9 @@ function App() {
     setTasks([]); 
     await AsyncStorage.removeItem('TASKS');
   };
+
+  // screen refresh
+  const [refreshing, setRefreshing] = useState(false);
 
   // Mockdata for MainScreen tasks
   const [tasks, setTasks] = useState<Task[]>([
@@ -160,6 +163,20 @@ function App() {
     console.log("Effective offline:", effectiveOffline);
   }, [effectiveOffline]);
 
+    const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // You can load tasks again from AsyncStorage, or API if online
+      const saved = await AsyncStorage.getItem('TASKS');
+      if (saved) setTasks(JSON.parse(saved));
+      console.log('🔄 Tasks refreshed');
+    } catch (err) {
+      console.log('Refresh error:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
 
   const MainScreenTabNavigator = () => (
       <Tab.Navigator
@@ -180,7 +197,7 @@ function App() {
         })}
       >
       <Tab.Screen name="Tasks">
-        {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} isDarkMode={isDarkMode}/>}
+        {(props) => <MainScreen {...props} tasks={tasks} setTasks={setTasks} isDarkMode={isDarkMode} onRefresh={onRefresh} refreshing={refreshing}/>}
       </Tab.Screen>
       <Tab.Screen name="Settings"  options={{ headerShown: false }}>
         {(props) => <SettingsScreen {...props} 

@@ -9,10 +9,12 @@ import {
   TextInput,
   Animated,
   Platform,
+  RefreshControl,
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 interface Task {
   id: string;
   title: string;
@@ -25,9 +27,11 @@ interface MainScreenProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   isDarkMode: boolean;
+  onRefresh: () => void;
+  refreshing: boolean;
 }
 
-export default function MainScreen({ tasks, setTasks, isDarkMode }: MainScreenProps) {
+export default function MainScreen({ tasks, setTasks, isDarkMode, onRefresh, refreshing }: MainScreenProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -108,71 +112,90 @@ export default function MainScreen({ tasks, setTasks, isDarkMode }: MainScreenPr
           : `${pendingCount} pending ${pendingCount === 1 ? "task" : "tasks"}`}
       </Text>
 
-      <FlatList
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Swipeable
-            renderRightActions={(progress, dragX) =>
-              renderRightActions(progress, dragX, item.id)
-            }
-          >
-            <View style={styles.taskRow}>
-              {/* Rounded Checkbox */}
-              <Pressable
-                style={[
-                    styles.checkbox,
-                    item.completed && styles.checkboxChecked,
-                    { borderColor: isDarkMode ? "#aaa" : "#888" },
-                  ]}
-                onPress={() =>
-                  setTasks((prev) =>
-                    prev.map((t) =>
-                      t.id === item.id ? { ...t, completed: !t.completed } : t
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <FlatList
+          data={tasks}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Swipeable
+              renderRightActions={(progress, dragX) =>
+                renderRightActions(progress, dragX, item.id)
+              }
+              overshootFriction={8}
+              simultaneousHandlers={undefined} // ✅ prevents Swipeable blocking pull
+            >
+              <View style={styles.taskRow}>
+                {/* Rounded Checkbox */}
+                <Pressable
+                  style={[
+                      styles.checkbox,
+                      item.completed && styles.checkboxChecked,
+                      { borderColor: isDarkMode ? "#aaa" : "#888" },
+                    ]}
+                  onPress={() =>
+                    setTasks((prev) =>
+                      prev.map((t) =>
+                        t.id === item.id ? { ...t, completed: !t.completed } : t
+                      )
                     )
-                  )
-                }
-              >
-                {item.completed && <View style={styles.checkboxInner} />}
-              </Pressable>
-
-              {/* Task Info */}
-              <Pressable style={styles.taskCardPressable} onPress={() => openModalForTask(item)}>
-                <View 
-                   style={[
-                    styles.taskCard,
-                    {
-                      backgroundColor: isDarkMode ? "#1c1c1e" : "#ffffffff",
-                      shadowColor: isDarkMode ? "#000" : "#888",
-                    },
-                  ]}
+                  }
                 >
-                  <Text
+                  {item.completed && <View style={styles.checkboxInner} />}
+                </Pressable>
+
+                {/* Task Info */}
+                <Pressable style={styles.taskCardPressable} onPress={() => openModalForTask(item)}>
+                  <View 
                     style={[
-                      styles.taskTitle,
-                      { color: isDarkMode ? "#fff" : "#000" },
-                      item.completed && styles.completed,
+                      styles.taskCard,
+                      {
+                        backgroundColor: isDarkMode ? "#1c1c1e" : "#ffffffff",
+                        shadowColor: isDarkMode ? "#000" : "#888",
+                      },
                     ]}
                   >
-                    {item.title}
-                  </Text>
-                  {item.description && 
-                    <Text style={[styles.description, { color: isDarkMode ? "#aaa" : "#555" }]}>
-                      {item.description}
+                    <Text
+                      style={[
+                        styles.taskTitle,
+                        { color: isDarkMode ? "#fff" : "#000" },
+                        item.completed && styles.completed,
+                      ]}
+                    >
+                      {item.title}
                     </Text>
-                  }
-                  <Text style={[styles.due, { color: isDarkMode ? "#888" : "#888" }]}>
-                    Due: {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : "Not set"}
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
-          </Swipeable>
-        )}
-        ListEmptyComponent={
-          <Text style={{ color: "gray", marginTop: 20 }}>No tasks yet.</Text>
-        }
-      />
+                    {item.description && 
+                      <Text style={[styles.description, { color: isDarkMode ? "#aaa" : "#555" }]}>
+                        {item.description}
+                      </Text>
+                    }
+                    <Text style={[styles.due, { color: isDarkMode ? "#888" : "#888" }]}>
+                      Due: {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : "Not set"}
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            </Swipeable>
+          )}
+            ListEmptyComponent={
+              <Text style={{ color: "gray", marginTop: 20 }}>No tasks yet.</Text>
+            }
+            contentContainerStyle={{
+            flexGrow: 1,
+            minHeight: "100%", // ✅ ensures scroll area exists on iOS
+            paddingBottom: 80,  // ✅ prevents floating button overlap
+          }}
+            alwaysBounceVertical={true}  // ✅ needed for iOS
+            bounces={true}               // ✅ explicit iOS bounce enable
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={isDarkMode ? "#fff" : "#000"}
+              />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      </GestureHandlerRootView>
 
       {/* Floating Action Button */}
       <Pressable style={styles.fab} onPress={() => openModalForTask()}>
